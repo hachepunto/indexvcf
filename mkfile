@@ -1,15 +1,17 @@
-INDEXVCF_TARGETS = `{find -L data/ -name '*.vcf' \
-	| sed -e 's#^data/#results/indexvcf/#g' \
-		-e 's#$#.gz.tbi#g'}
+INDEXVCF_TARGETS = `{./targets}
 
-indexvcf:V:	$INDEXVCF_TARGETS
+indexvcf:EV:	$INDEXVCF_TARGETS
 
-
-results/indexvcf/%.vcf.gz.tbi:		results/indexvcf/%.vcf.gz
+results/indexvcf/%.sort.vcf.gz.tbi \
+results/indexvcf/%.sort.vcf.gz:D:	results/indexvcf/%.vcf.gz
 	mkdir -p `dirname $target`
-	tabix -p vcf results/indexvcf/$stem.vcf.gz
+	vcf-sort results/indexvcf/$stem.vcf.gz \
+	>  'results/indexvcf/'$stem'.sort.vcf' \
+	&& bgzip 'results/indexvcf/'$stem'.sort.vcf' \
+	&& bcftools index -t 'results/indexvcf/'$stem'.sort.vcf.gz'
 
-results/indexvcf/%.vcf.gz:		data/%.vcf
-	mkdir -p `dirname $target`
-	cp data/$stem.vcf results/indexvcf/$stem.vcf
-	bgzip results/indexvcf/$stem.vcf
+'results/indexvcf/%.vcf.gz':D:		'data/%.vcf.gz'
+	DIR=`dirname $target`
+	mkdir -p "$DIR"
+	cp $prereq "$DIR"
+	test -f $target || bgzip 'results/indexvcf/'$stem'.vcf'

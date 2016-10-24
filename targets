@@ -1,0 +1,7 @@
+#!/bin/sh
+
+find -L data/ -name '*.vcf' \
+	-o -name '*.vcf.gz' \
+| sed -r \
+	-e 's#^data/#results/indexvcf/#g' \
+	-e 's#\.vcf(\.gz)?#.sort.vcf.gz.tbi#g'
